@@ -151,12 +151,12 @@ export const resumeRouter = router({
         return {
           id: analysis?.id ?? cachedAnalysis.id,
           inferredRole: String(cachedAnalysis.inferred_role || "General Role").slice(0, 100),
-          atsScore: Math.min(60, Math.max(0, Number(cachedAnalysis.ats_score) || 0)),
+          atsScore: Math.max(0, Number(cachedAnalysis.ats_score) || 0),
           atsLabel: (["Strong", "Moderate", "Weak"].includes(cachedAnalysis.ats_label)
             ? cachedAnalysis.ats_label
             : "Weak") as "Strong" | "Moderate" | "Weak",
           atsReason: String(cachedAnalysis.ats_reason || "").slice(0, 300),
-          hirabilityScore: Math.min(60, Math.max(0, Number(cachedAnalysis.hireability_score) || 0)),
+          hirabilityScore: Math.max(0, Number(cachedAnalysis.hireability_score) || 0),
           hirabilityLabel: (["Strong", "Moderate", "Weak"].includes(cachedAnalysis.hireability_label)
             ? cachedAnalysis.hireability_label
             : "Weak") as "Strong" | "Moderate" | "Weak",

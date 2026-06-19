@@ -51,9 +51,19 @@ interface OpenRouterResponse {
   model?: string;
 }
 
+// Max visible score — no resume ever reaches "Strong" (threshold 70).
+// Thresholds are scaled proportionally: Moderate ≥ round(45 * CAP/100).
+const SCORE_CAP = 60;
+const MODERATE_THRESHOLD = Math.round(45 * SCORE_CAP / 100); // 27
+
+function scaleScore(aiScore: number): number {
+  const clamped = Math.min(100, Math.max(0, Number(aiScore) || 0));
+  return Math.round((clamped / 100) * SCORE_CAP);
+}
+
 function labelFromScore(score: number): ScoreLabel {
-  if (score >= 70) return "Strong";
-  if (score >= 45) return "Moderate";
+  if (score >= 70) return "Strong";             // unreachable with cap=60
+  if (score >= MODERATE_THRESHOLD) return "Moderate";
   return "Weak";
 }
 
@@ -69,9 +79,8 @@ function parseAIResponse(
     throw new Error("AI returned invalid JSON. Please try again.");
   }
 
-  const SCORE_CAP = 60;
-  const atsScore = Math.min(SCORE_CAP, Math.max(0, Number(parsed.atsScore) || 0));
-  const hirabilityScore = Math.min(SCORE_CAP, Math.max(0, Number(parsed.hirabilityScore) || 0));
+  const atsScore = scaleScore(Number(parsed.atsScore));
+  const hirabilityScore = scaleScore(Number(parsed.hirabilityScore));
 
   // ── Parse sections ────────────────────────────────────────
   const rawSections = Array.isArray(parsed.sections) ? parsed.sections : [];
