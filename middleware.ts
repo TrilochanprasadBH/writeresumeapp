@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
     // When multiple proxies are chained, the real client IP is the LAST entry
     // (each proxy appends, so the first entry is the one the client supplied).
     const ip =
-      req.ip ??
+      req.headers.get("x-real-ip") ??
       req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ??
       "127.0.0.1";
 
