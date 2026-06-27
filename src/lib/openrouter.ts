@@ -54,6 +54,7 @@ interface OpenRouterResponse {
 // Max visible score — no resume ever reaches "Strong" (threshold 70).
 // Thresholds are scaled proportionally: Moderate ≥ round(45 * CAP/100).
 const SCORE_CAP = 60;
+const STRONG_THRESHOLD = Math.round(70 * SCORE_CAP / 100);   // 42
 const MODERATE_THRESHOLD = Math.round(45 * SCORE_CAP / 100); // 27
 
 function scaleScore(aiScore: number): number {
@@ -62,7 +63,7 @@ function scaleScore(aiScore: number): number {
 }
 
 function labelFromScore(score: number): ScoreLabel {
-  if (score >= 70) return "Strong";             // unreachable with cap=60
+  if (score >= STRONG_THRESHOLD) return "Strong";
   if (score >= MODERATE_THRESHOLD) return "Moderate";
   return "Weak";
 }

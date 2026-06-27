@@ -6,14 +6,7 @@ import {
 } from "@/lib/validations";
 import { extractResumeText, looksLikeResume } from "@/lib/resume-parser";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { checkRateLimit } from "@/lib/rate-limit";
-
-// Next.js route segment config — allow up to 5MB body
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import { checkRateLimit, recordRateLimitEvent } from "@/lib/rate-limit";
 
 function errorResponse(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
@@ -27,6 +20,7 @@ export async function POST(req: NextRequest) {
   if (!rateLimit.allowed) {
     return errorResponse("Too many requests. Please try again later.", 429);
   }
+  await recordRateLimitEvent(ip);
 
   // ── Parse multipart form ───────────────────────────────────
   let formData: FormData;

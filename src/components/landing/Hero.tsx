@@ -66,8 +66,8 @@ export function Hero() {
         </span>
 
         <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
-          Know exactly why your resume{" "}
-          <span className="text-emerald-600">gets rejected</span>
+          Know your{" "}
+          <span className="text-emerald-600">hireability score.</span>
         </h1>
 
         <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-gray-600 sm:text-lg">

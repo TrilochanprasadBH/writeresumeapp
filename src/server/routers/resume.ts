@@ -119,14 +119,17 @@ export const resumeRouter = router({
         });
       }
 
-      // ── 4. Record rate limit event ─────────────────────────
-      await recordRateLimitEvent(ctx.ipAddress, input.email);
-
       // ── 5. Clean up upload (best-effort) ──────────────────
       await db.from("resume_uploads").delete().eq("id", input.uploadId);
 
       // ── 6. Return cached result if available ───────────────
       if (cachedAnalysis) {
+        // Re-apply the 0-60 cap so old rows (stored before scoring was introduced) never leak raw scores
+        const cachedAtsScore = Math.min(60, Math.max(0, Number(cachedAnalysis.ats_score) || 0));
+        const cachedHireScore = Math.min(60, Math.max(0, Number(cachedAnalysis.hireability_score) || 0));
+        const capLabel = (s: number): "Strong" | "Moderate" | "Weak" =>
+          s >= 42 ? "Strong" : s >= 27 ? "Moderate" : "Weak";
+
         const { data: analysis } = await db
           .from("analyses")
           .insert({
@@ -134,11 +137,11 @@ export const resumeRouter = router({
             upload_id: input.uploadId,
             content_hash: upload.content_hash,
             inferred_role: cachedAnalysis.inferred_role,
-            ats_score: cachedAnalysis.ats_score,
-            ats_label: cachedAnalysis.ats_label,
+            ats_score: cachedAtsScore,
+            ats_label: capLabel(cachedAtsScore),
             ats_reason: cachedAnalysis.ats_reason,
-            hireability_score: cachedAnalysis.hireability_score,
-            hireability_label: cachedAnalysis.hireability_label,
+            hireability_score: cachedHireScore,
+            hireability_label: capLabel(cachedHireScore),
             hireability_reason: cachedAnalysis.hireability_reason,
             rejection_signals: cachedAnalysis.rejection_signals,
             sections: cachedAnalysis.sections,
@@ -148,18 +151,16 @@ export const resumeRouter = router({
           .select("id")
           .single();
 
+        await recordRateLimitEvent(ctx.ipAddress, input.email);
+
         return {
           id: analysis?.id ?? cachedAnalysis.id,
           inferredRole: String(cachedAnalysis.inferred_role || "General Role").slice(0, 100),
-          atsScore: Math.max(0, Number(cachedAnalysis.ats_score) || 0),
-          atsLabel: (["Strong", "Moderate", "Weak"].includes(cachedAnalysis.ats_label)
-            ? cachedAnalysis.ats_label
-            : "Weak") as "Strong" | "Moderate" | "Weak",
+          atsScore: cachedAtsScore,
+          atsLabel: capLabel(cachedAtsScore),
           atsReason: String(cachedAnalysis.ats_reason || "").slice(0, 300),
-          hirabilityScore: Math.max(0, Number(cachedAnalysis.hireability_score) || 0),
-          hirabilityLabel: (["Strong", "Moderate", "Weak"].includes(cachedAnalysis.hireability_label)
-            ? cachedAnalysis.hireability_label
-            : "Weak") as "Strong" | "Moderate" | "Weak",
+          hirabilityScore: cachedHireScore,
+          hirabilityLabel: capLabel(cachedHireScore),
           hirabilityReason: String(cachedAnalysis.hireability_reason || "").slice(0, 300),
           rejectionSignals: sanitizeSignals(cachedAnalysis.rejection_signals),
           sections: sanitizeSections(cachedAnalysis.sections),
@@ -210,7 +211,10 @@ export const resumeRouter = router({
         // Non-fatal — we still return the result to the user
       }
 
-      // ── 9. Return to client ────────────────────────────────
+      // ── 9. Record rate limit event (only on successful analysis) ──
+      await recordRateLimitEvent(ctx.ipAddress, input.email);
+
+      // ── 10. Return to client ───────────────────────────────
       return {
         id: analysis?.id ?? "local",
         ...aiResult.result,

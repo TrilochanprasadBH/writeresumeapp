@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, ShieldAlert, Mail, MessageCircle } from "lucide-react";
+import { RotateCcw, ShieldAlert, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getScoreColor, getSeverityColor } from "@/lib/utils";
@@ -14,11 +14,16 @@ interface ScoreCircleProps {
   subtitle: string;
 }
 
+const SCORE_MAX = 60; // scores are scaled to 0-60
+const STRONG_MIN = 42; // Math.round(70 * 60 / 100)
+const MODERATE_MIN = 27; // Math.round(45 * 60 / 100)
+
 function ScoreCircle({ score, label, title, subtitle }: ScoreCircleProps) {
   const r = 44;
   const circ = 2 * Math.PI * r;
-  const stroke = score >= 70 ? "#16a34a" : score >= 45 ? "#d97706" : "#dc2626";
-  const track = score >= 70 ? "#dcfce7" : score >= 45 ? "#fef3c7" : "#fee2e2";
+  const stroke = score >= STRONG_MIN ? "#16a34a" : score >= MODERATE_MIN ? "#d97706" : "#dc2626";
+  const track = score >= STRONG_MIN ? "#dcfce7" : score >= MODERATE_MIN ? "#fef3c7" : "#fee2e2";
+  const textColor = score >= STRONG_MIN ? "text-green-600" : score >= MODERATE_MIN ? "text-amber-500" : "text-red-500";
 
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
@@ -29,13 +34,13 @@ function ScoreCircle({ score, label, title, subtitle }: ScoreCircleProps) {
             cx="50" cy="50" r={r} fill="none" stroke={stroke} strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circ}
-            strokeDashoffset={circ * (1 - score / 100)}
+            strokeDashoffset={circ * (1 - score / SCORE_MAX)}
             className="transition-all duration-1000 ease-out"
           />
         </svg>
         <div className="flex flex-col items-center">
-          <span className={`text-2xl font-extrabold ${getScoreColor(score)}`}>{score}</span>
-          <span className="text-xs font-medium text-gray-400">/ 100</span>
+          <span className={`text-2xl font-extrabold ${textColor}`}>{score}</span>
+          <span className="text-xs font-medium text-gray-400">/ {SCORE_MAX}</span>
         </div>
       </div>
 
@@ -183,27 +188,15 @@ export function ResultsPanel({ data, onStartOver }: ResultsPanelProps) {
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <a
-            href="mailto:hello@resumelens.app?subject=Expert Resume Review Request"
+            href="mailto:knowledge8base@yahoo.com?subject=Expert Resume Review Request"
             className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
           >
             <Mail className="h-4 w-4" />
             Email us for expert review
           </a>
-          <a
-            href="https://wa.me/1234567890?text=Hi%2C+I+want+a+resume+expert+review"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-xl border border-green-300 bg-green-50 px-5 py-3 text-sm font-semibold text-green-800 transition-colors hover:bg-green-100"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Chat on WhatsApp
-          </a>
         </div>
         <p className="mt-3 text-xs text-gray-400">No commitment · Turnaround in 24h</p>
       </div>
-
-      {/* Model credit */}
-      <p className="text-center text-xs text-gray-300">Analyzed by Specialist Resume AI Agent</p>
 
       {/* Start over */}
       <Button variant="outline" onClick={onStartOver} className="w-full gap-2">

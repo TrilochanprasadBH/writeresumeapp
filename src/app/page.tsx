@@ -77,10 +77,10 @@ export default function HomePage() {
             © {new Date().getFullYear()} ResumeLens. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-gray-400">
-            <a href="/privacy" className="hover:text-gray-600">
+            <a href="#" className="hover:text-gray-600">
               Privacy
             </a>
-            <a href="/terms" className="hover:text-gray-600">
+            <a href="#" className="hover:text-gray-600">
               Terms
             </a>
           </div>

@@ -12,7 +12,7 @@ interface LeadFormProps {
 }
 
 export function LeadForm({ onSubmit }: LeadFormProps) {
-  const [fields, setFields] = useState({ name: "", email: "", phone: "" });
+  const [fields, setFields] = useState({ name: "", email: "", phone: "+91 " });
   const [errors, setErrors] = useState<Partial<typeof fields>>({});
 
   function validate() {
@@ -85,7 +85,7 @@ export function LeadForm({ onSubmit }: LeadFormProps) {
               id="phone"
               type="tel"
               autoComplete="tel"
-              placeholder="+1 555 000 0000"
+              placeholder="+91 98765 43210"
               value={fields.phone}
               onChange={(e) => setFields({ ...fields, phone: e.target.value })}
               className="mt-1"

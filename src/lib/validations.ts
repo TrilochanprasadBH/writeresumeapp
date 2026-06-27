@@ -27,6 +27,6 @@ export const ALLOWED_MIME_TYPES = [
   "application/msword",
 ] as const;
 
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+export const MAX_FILE_SIZE_BYTES = 4 * 1024 * 1024; // 4 MB — stays under Vercel's 4.5 MB platform limit
 export const MAX_TEXT_CHARS = 50_000;
 export const MIN_TEXT_CHARS = 100;
